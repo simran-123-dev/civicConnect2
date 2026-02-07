@@ -17,7 +17,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-linear-to-r from-[#0A2540] to-[#0F3D5E]">
+    <nav className="sticky top-0 z-50 bg-[#0A2540]">
       <div className="w-full px-12 h-24 flex items-center justify-between">
 
         <span className="text-3xl md:text-4xl font-semibold text-white">

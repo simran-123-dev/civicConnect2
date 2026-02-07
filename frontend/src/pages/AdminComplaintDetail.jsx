@@ -61,7 +61,7 @@ const AdminComplaintDetail = () => {
           console.warn("No server mapping for empId", assignedTo, mapErr);
         }
       }
-    } catch (e) {
+    } catch {
       // ignore
     }
 
