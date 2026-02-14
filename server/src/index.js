@@ -33,29 +33,11 @@ const start = async () => {
   try {
     await connectDb();
 
-    const basePort = parseInt(process.env.PORT, 10) || 5000;
+    const PORT = process.env.PORT || 5000;
 
-    const tryListen = (port, attemptsLeft) =>
-      new Promise((resolve, reject) => {
-        const server = app.listen(port, () => {
-          console.log(`Server running on port ${port}`);
-          resolve(server);
-        });
-
-        server.on("error", (err) => {
-          if (err && err.code === "EADDRINUSE" && attemptsLeft > 0) {
-            console.warn(`Port ${port} in use, trying ${port + 1}...`);
-            setTimeout(
-              () => resolve(tryListen(port + 1, attemptsLeft - 1)),
-              200
-            );
-          } else {
-            reject(err);
-          }
-        });
-      });
-
-    await tryListen(basePort, 4);
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
 
   } catch (error) {
     console.error("Failed to start server", error);
