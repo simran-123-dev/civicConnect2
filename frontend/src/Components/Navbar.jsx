@@ -15,7 +15,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200">
+    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200">
       <div className="w-full px-12 h-24 flex items-center justify-between">
 
         <span className="text-3xl md:text-4xl font-semibold text-gray-800">
@@ -66,14 +66,6 @@ const Navbar = () => {
                 <NavLink to="/admin/complaints" className="px-6 py-2.5 text-gray-600 hover:text-blue-600">
                   Complaints
                 </NavLink>
-
-                <NavLink
-                  to="/admin/notifications"
-                  className="flex items-center px-6 py-2.5 text-gray-600 hover:text-blue-600"
-                >
-                  <FaBell className="mr-2" />
-                  Notifications
-                </NavLink>
               </>
             )}
 
@@ -85,14 +77,6 @@ const Navbar = () => {
 
                 <NavLink to="/employee/tasks" className="px-6 py-2.5 text-gray-600 hover:text-blue-600">
                   My Tasks
-                </NavLink>
-
-                <NavLink
-                  to="/employee/notifications"
-                  className="flex items-center px-6 py-2.5 text-gray-600 hover:text-blue-600"
-                >
-                  <FaBell className="mr-2" />
-                  Notifications
                 </NavLink>
               </>
             )}

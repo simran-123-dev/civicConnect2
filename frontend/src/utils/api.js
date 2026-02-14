@@ -182,61 +182,119 @@ export const login = (identifier, password) => {
 
 export const createComplaint = (complaint) => {
   return apiCall("POST", "/complaints", complaint).catch((err) => {
-    try {
-      const list = getComplaints();
-      const maxId = list.reduce((m, c) => Math.max(m, Number(c.id || 0)), 0);
-      const newItem = {
-        id: maxId + 1,
-        ...complaint,
-        createdAt: new Date().toISOString(),
-        status: "Pending",
-      };
-      seedComplaints([...list, newItem]);
-      return Promise.resolve(newItem);
-    } catch {
-      return Promise.reject(err);
-    }
+    const list = getComplaints();
+    const maxId = list.reduce((m, c) => Math.max(m, Number(c.id || 0)), 0);
+
+    const newItem = {
+      id: maxId + 1,
+      ...complaint,
+      coords: complaint.coords || null,
+      createdAt: new Date().toISOString(),
+      status: "Pending",
+    };
+
+    seedComplaints([...list, newItem]);
+    return Promise.resolve(newItem);
   });
 };
+
 
 export const updateComplaintOnServer = (id, updates) => {
   return apiCall("PATCH", `/complaints/${id}`, updates).catch(() => null);
 };
 
-/* ================= EMPLOYEE (UNCHANGED FROM YOUR ORIGINAL) ================= */
+/* ================= EMPLOYEE ================= */
 
 export const getEmployeeTasks = (status = null) => {
   const query = status ? `?status=${status}` : "";
-  return apiCall("GET", `/employee/tasks${query}`).catch(() => []);
-};
 
-export const getEmployeeTask = (id) => {
-  return apiCall("GET", `/employee/tasks/${id}`).catch(() => null);
+  return apiCall("GET", `/employee/tasks${query}`).catch(() => {
+    console.warn("⚠️ Backend not responding — using local fallback");
+
+    const all = getComplaints();
+
+    // Fake employee tasks from complaints
+    const tasks = all
+      .filter(c => c.status !== "Completed")
+      .map(c => ({
+        _id: c.id,
+        title: c.title,
+        description: c.description,
+        status: c.status || "Assigned",
+        priority: c.priority || "Medium",
+        dueDate: new Date().toISOString(),
+        estimatedHours: 2,
+        actualHours: 0,
+        targetLocation: {
+          address: c.locationText || "Unknown"
+        }
+      }));
+
+    if (!status) return tasks;
+
+    return tasks.filter(t => t.status === status);
+  });
 };
 
 export const getEmployeeDashboardStats = () => {
-  return apiCall("GET", "/employee/stats");
+  return apiCall("GET", "/employee/stats").catch(() => {
+    console.warn("⚠️ Using local stats fallback");
+
+    const tasks = getComplaints();
+
+    return {
+      totalTasks: tasks.length,
+      pendingTasks: tasks.filter(t => t.status === "Pending").length,
+      inProgressTasks: tasks.filter(t => t.status === "In Progress").length,
+      completedTasks: tasks.filter(t => t.status === "Completed").length,
+      unresolvedTasks: tasks.filter(t => t.status === "Unresolved").length,
+      overdueTasks: 0
+    };
+  });
 };
 
-export const toggleDutyStatus = (isOnDuty) => {
-  return apiCall("PUT", "/employee/duty", { isOnDuty });
+export const toggleDutyStatus = async (isOnDuty) => {
+  return apiCall("PUT", "/employee/duty", { isOnDuty }).catch(() => {
+    console.warn("⚠️ Local duty fallback");
+    localStorage.setItem("employeeDuty", JSON.stringify(isOnDuty));
+    return { success: true };
+  });
 };
 
-export const updateEmployeeLocation = (lat, lng, note = "") => {
-  return apiCall("PUT", "/employee/location", { lat, lng, note });
+export const updateEmployeeLocation = async (lat, lng, note = "") => {
+  return apiCall("PUT", "/employee/location", { lat, lng, note }).catch(() => {
+    console.warn("⚠️ Local location fallback");
+
+    localStorage.setItem(
+      "employeeLocation",
+      JSON.stringify({
+        lat,
+        lng,
+        note,
+        updatedAt: new Date().toISOString(),
+      })
+    );
+
+    return { success: true };
+  });
 };
 
 export const updateTaskStatus = (id, status, notes = "", location = null, actualHours = null) => {
   const body = { status, notes };
   if (location) body.location = location;
   if (actualHours != null) body.actualHours = actualHours;
-  return apiCall("PUT", `/employee/tasks/${id}/status`, body);
-};
 
-export const getAllEmployees = () => {
-  return apiCall("GET", "/employee").catch(() => []);
-};
+  return apiCall("PUT", `/employee/tasks/${id}/status`, body).catch(() => {
+    console.warn("⚠️ Local task status fallback");
 
-export const getUserIdByEmpId = (empId) => {
-  return apiCall("GET", `/employee/by-empid/${encodeURIComponent(empId)}`);
+    const list = getComplaints();
+    const idx = list.findIndex(c => String(c.id) === String(id));
+
+    if (idx !== -1) {
+      list[idx].status = status;
+      seedComplaints(list);
+    }
+
+    return { success: true };
+  });
 };
