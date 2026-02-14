@@ -8,45 +8,34 @@ const { connectDb } = require("./config/db");
 const authRoutes = require("./routes/auth");
 const complaintRoutes = require("./routes/complaints");
 const analyticsRoutes = require("./routes/analytics");
-const employeeRoutes = require("./routes/employee"); // ✅ ADDED
+const employeeRoutes = require("./routes/employee");
 
 const app = express();
 
-app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
+app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
+
+app.get("/", (req, res) => {
+  res.send("Server is live");
+});
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-/* ================= ROUTES ================= */
-
 app.use("/api/auth", authRoutes);
 app.use("/api/complaints", complaintRoutes);
 app.use("/api/analytics", analyticsRoutes);
-app.use("/api/employee", employeeRoutes); // ✅ THIS WAS MISSING
+app.use("/api/employee", employeeRoutes);
 
-/* ================= SERVER START ================= */
+const PORT = process.env.PORT || 10000;
 
-const start = async () => {
-  try {
-    await connectDb();
+app.listen(PORT, "0.0.0.0", () => {
+  console.log("Server started on port:", PORT);
+});
 
-    const PORT = process.env.PORT;
-
-    if (!PORT) {
-      throw new Error("PORT is not defined");
-    }
-
-    app.listen(PORT, "0.0.0.0", () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-
-  } catch (error) {
-    console.error("Failed to start server", error);
-    process.exit(1);
-  }
-};
-
-start();
+// Connect DB AFTER server starts
+connectDb()
+  .then(() => console.log("MongoDB Connected"))
+  .catch((err) => console.error("Mongo Error:", err));
