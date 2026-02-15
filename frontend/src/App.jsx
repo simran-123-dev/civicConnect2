@@ -11,7 +11,6 @@ import AdminComplaints from "./pages/AdminComplaints";
 import AdminComplaintDetail from "./pages/AdminComplaintDetail";
 import ComplaintDetail from "./pages/ComplaintDetail";
 import Login from "./pages/Login";
-import DebugPage from "./pages/DebugPage";
 import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 
 import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
@@ -26,7 +25,6 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/debug" element={<DebugPage />} />
         <Route path="/raise" element={<RaiseIssue />} />
         <Route path="/map" element={<MapDashboard />} />
         <Route path="/my-complaints" element={<MyComplaints />} />
